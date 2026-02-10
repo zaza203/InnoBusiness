@@ -12,3 +12,5 @@ staticfiles/
 
 # Node
 node_modules/
+
+.next/

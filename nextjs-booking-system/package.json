@@ -1,0 +1,32 @@
+{
+  "name": "nextjs-booking-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "next": "14.2.15",
+    "next-swagger-doc": "0.4.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "swagger-ui-react": "5.17.14",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.16.5",
+    "@types/react": "18.3.5",
+    "@types/react-dom": "18.3.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.15",
+    "prisma": "5.22.0",
+    "typescript": "5.6.2"
+  }
+}
