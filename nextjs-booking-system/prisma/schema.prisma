@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  passwordHash  String
+  role          Role       @default(CUSTOMER)
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  sessions      Session[]
+  ownedResources Resource[]
+  bookings      Booking[]  @relation("CustomerBookings")
+  reviews       Review[]
+  notifications Notification[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Resource {
+  id          String         @id @default(cuid())
+  name        String
+  type        ResourceType
+  location    String
+  capacity    Int
+  description String?
+  status      ResourceStatus @default(ACTIVE)
+  ownerId     String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  owner       User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  images      ResourceImage[]
+  bookings    Booking[]
+  waitingList WaitingList[]
+  reviews     Review[]
+}
+
+model ResourceImage {
+  id         String   @id @default(cuid())
+  resourceId String
+  imageUrl   String
+  createdAt  DateTime @default(now())
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id                String            @id @default(cuid())
+  resourceId        String
+  customerId        String
+  title             String
+  notes             String?
+  startAt           DateTime
+  endAt             DateTime
+  status            BookingStatus     @default(PENDING)
+  approvalComment   String?
+  recurringRule     String?
+  cancellationReason String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  resource          Resource          @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  customer          User              @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Restrict)
+  payment           Payment?
+}
+
+model WaitingList {
+  id         String   @id @default(cuid())
+  resourceId String
+  customerId String
+  requestedAt DateTime @default(now())
+  preferredStartAt DateTime
+  preferredEndAt DateTime
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  bookingId   String        @unique
+  amount      Float
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  providerRef String?
+  createdAt   DateTime      @default(now())
+  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  resourceId String
+  customerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  customer   User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      NotificationType
+  subject   String
+  message   String
+  channel   NotificationChannel @default(EMAIL)
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  entity      String
+  entityId    String
+  metadata    String?
+  createdAt   DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum ResourceStatus {
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
+}
+
+enum ResourceType {
+  MEETING_ROOM
+  VEHICLE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_CANCELLATION
+  BOOKING_REMINDER
+}
+
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+}

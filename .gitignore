@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+.venv/
+venv/
+.env
+
+# Django
+staticfiles/
+
+# Node
+node_modules/
+
+.next/
